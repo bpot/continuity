@@ -28,26 +28,4 @@ describe Scheduler do
       end
     end
   end
-
-  describe "run" do
-    it "should use lock_for_scheduling on the backend" do
-    end
-
-    it "should only use lock_for_scheduling if frequency seconds have passed" do
-    end
-  end
-
-  describe "every" do
-    describe "10s" do
-    end
-
-    describe "1m" do
-    end
-
-    describe "3h" do
-    end
-
-    describe "1d" do
-    end
-  end
 end

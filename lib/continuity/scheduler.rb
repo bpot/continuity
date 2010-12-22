@@ -22,13 +22,17 @@ module Continuity
     
     def run
       now = Time.now.to_i
-      return unless @next_schedule <= now
+      return false unless @next_schedule <= now
 
+      range_scheduled = false
       scheduled_up_to = @backend.lock_for_scheduling(now) do |previous_time|
-        do_jobs((previous_time+1)..now)
+        range_scheduled = (previous_time+1)..now
+        do_jobs(range_scheduled)
       end
 
       @next_schedule = scheduled_up_to + @frequency
+
+      return range_scheduled
     end
 
     def do_jobs(time_range)

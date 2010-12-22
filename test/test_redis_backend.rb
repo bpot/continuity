@@ -12,7 +12,7 @@ describe Continuity::RedisBackend do
       exit
     end
 
-    @rb = Continuity::RedisBackend.new(@redis, 30, 10)
+    @rb = Continuity::RedisBackend.new(@redis, 10, 30)
   end
 
   describe "bootstrapping" do
@@ -78,7 +78,7 @@ describe Continuity::RedisBackend do
       @rb.lock_for_scheduling(now) {}
 
       yielded = false
-      @rb.lock_for_scheduling(now+11) { yielded = true }
+      @rb.lock_for_scheduling(now+15) { yielded = true }
       yielded.must_equal true
     end
 
