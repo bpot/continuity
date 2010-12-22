@@ -1,6 +1,34 @@
-= continuity
+= Continuity
 
-Description goes here.
+Allows you to share scheduling duties across any number of workers. Unlike other solutions (clockwork/rufus-scheduler) it doesn't introduce a single point of failure rely by relying on a single, always running scheduling process.  Workers use Redis to coordinate scheduling duties.  The scheduler will never miss a job, even if all workers are shut down for a period of time it will pick up from where it left off
+
+Continuity only runs one job at a time, so your tasks should create jobs in Resque, DJ, etc and not actually do the heavy lifting themselves.
+
+Redis could conceivably be replaced by any consistent datastore.
+
+= Example
+  
+    scheduler = Continuity::Scheduler.new_using_redis(redis_handle)
+
+    scheduler.every('10s') do
+      Resque.enqueue(PeriodicJob)
+    end
+
+    scheduler.cron('0 0 * * * *') do
+      Resque.enqueue(DailyJob)
+    end
+
+    # main worker loop
+    loop do
+      do_job
+      scheduler.run  # this call introduces only a trivial amount of overhead
+    end
+
+= Cron
+
+* Unlike standard cron it has a sixth field at the front for seconds.  
+* It doesn't support month/day names, use the numeral.  
+* In many cron implementations entries which specify the day of the month and day of the week (i.e. "0 0 11 1,5 * mon") have a special meaning, this is not supported.
 
 == Contributing to continuity
  
