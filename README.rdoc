@@ -1,5 +1,7 @@
 = Continuity
 
+NOTE: this has a decent amount of test coverage, but has yet to be tested in any kind of production environment. I hope to do some more real-worldish testing soon.
+
 Allows you to share scheduling duties across any number of workers. Unlike other solutions (clockwork/rufus-scheduler) it doesn't introduce a single point of failure rely by relying on a single, always running scheduling process.  Workers use Redis to coordinate scheduling duties.  The scheduler will never miss a job, even if all workers are shut down for a period of time it will pick up from where it left off
 
 Continuity only runs one job at a time, so your tasks should create jobs in Resque, DJ, etc and not actually do the heavy lifting themselves.
