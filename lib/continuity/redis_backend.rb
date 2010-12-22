@@ -3,7 +3,7 @@ module Continuity
     LOCK_KEY = "continuity_lock"
     LAST_SCHED_KEY = "continuity_scheduled_up_to"
 
-    def initialize(redis, lock_timeout, frequency)
+    def initialize(redis, frequency = 10, lock_timeout = 30)
       @redis        = redis
       @lock_timeout = lock_timeout
       @frequency    = frequency
@@ -21,11 +21,19 @@ module Continuity
         return now
       end
 
+      # this is tricky, we only want to attempt a lock
+      # if there is a possibility we can schedule things.
+      # BUT, once we attain a lock we need to make sure 
+      # someone else hasn't already scheduled that period
       if (now - scheduled_up_to) >= @frequency
         lock do
-          yield scheduled_up_to
-          @redis.set(LAST_SCHED_KEY, now)
-          scheduled_up_to = now
+          scheduled_up_to = @redis.get(LAST_SCHED_KEY).to_i
+          if (now - scheduled_up_to) >= @frequency
+            # good we should still schedule
+            yield scheduled_up_to
+            @redis.set(LAST_SCHED_KEY, now)
+            scheduled_up_to = now
+          end
         end
       end
 

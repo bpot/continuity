@@ -1,7 +1,7 @@
 module Continuity
   class Scheduler
-    def self.new_using_redis(redis)
-      new(RedisBackend.new(redis))
+    def self.new_using_redis(redis, frequency = 10)
+      new(RedisBackend.new(redis, frequency))
     end
 
     def initialize(backend, frequency = 10)
@@ -13,7 +13,7 @@ module Continuity
     end
 
     def every(period, &blk)
-      @jobs[PeriodEntry.new(period)] = blk
+      @jobs[PeriodicEntry.new(period)] = blk
     end
 
     def cron(cron_line, &blk)
@@ -22,13 +22,13 @@ module Continuity
     
     def run
       now = Time.now.to_i
-      return unless next_schedule <= now
+      return unless @next_schedule <= now
 
       scheduled_up_to = @backend.lock_for_scheduling(now) do |previous_time|
-        do_jobs(previous_time, now)
+        do_jobs((previous_time+1)..now)
       end
 
-      next_schedule = scheduled_up_to + @frequency
+      @next_schedule = scheduled_up_to + @frequency
     end
 
     def do_jobs(time_range)
