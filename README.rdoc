@@ -28,7 +28,7 @@ Redis could conceivably be replaced by any consistent datastore.
 
 * Unlike standard cron it has a sixth field at the front for seconds.  
 * It doesn't support month/day names, use the numeral.  
-* In many cron implementations entries which specify the day of the month and day of the week (i.e. "0 0 11 1,5 * mon") have a special meaning, this is not supported.
+* In many cron implementations entries specifying the day of the month and day of the week (i.e. "0 0 11 1,5 * mon") have a special meaning, this is not supported.
 
 == Contributing to continuity
  
