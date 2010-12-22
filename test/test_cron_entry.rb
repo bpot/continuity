@@ -132,4 +132,34 @@ describe CronEntry do
       @ce.at?(Time.parse("2010-12-26 06:00:00")).must_equal false
     end
   end
+
+  describe "ranges w/intervals" do
+    before do
+      # 10 * 20 * 3 = 600 times in a day
+      @ce = CronEntry.new("0-9/2,20-39/4 40-59/1 2,4,8 * * *")
+    end
+
+    it "should run at 2010-12-20 04:40:06" do
+      @ce.at?(Time.parse("2010-12-20 04:40:06")).must_equal true
+    end
+
+    it "should run at 2010-12-20 02:50:24" do
+      @ce.at?(Time.parse("2010-12-20 02:50:24")).must_equal true
+    end
+
+    it "should not run at 2010-12-20 03:50:22" do
+      @ce.at?(Time.parse("2010-12-20 03:50:22")).must_equal false
+    end
+
+    it "should run 600 times in a day" do
+      count = 0
+      start = Time.parse("2010-12-20 02:40:09").to_i
+      start.upto(start + 86399) do |t|
+        if @ce.at?(Time.at(t))
+          count += 1
+        end
+      end
+      count.must_equal 600
+    end
+  end
 end
