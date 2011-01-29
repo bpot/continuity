@@ -20,6 +20,10 @@ Redis could conceivably be replaced by any consistent datastore.
       Resque.enqueue(DailyJob)
     end
 
+    scheduler.cron('0 * * * *') do
+      Resque.enqueue(DailyJob)
+    end
+
     # main worker loop
     loop do
       do_job
@@ -28,7 +32,7 @@ Redis could conceivably be replaced by any consistent datastore.
 
 = Cron
 
-* Unlike standard cron it has a sixth field at the front for seconds.  
+* Supports a sixth field at the front for seconds. 
 * It doesn't support month/day names, use the numeral.  
 * In many cron implementations entries specifying the day of the month and day of the week (i.e. "0 0 11 1,5 * mon") have a special meaning, this is not supported.
 

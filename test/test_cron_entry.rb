@@ -7,14 +7,17 @@ include Continuity
 describe CronEntry do
   describe "0 * * * * * (every minute)" do
     before do
+      @ce_short = CronEntry.new("* * * * *")
       @ce = CronEntry.new("0 * * * * *")
     end
 
     it "should run at 2010-12-20 00:00:00" do
+      @ce_short.at?(Time.parse("2010-12-20 00:00:00")).must_equal true
       @ce.at?(Time.parse("2010-12-20 00:00:00")).must_equal true
     end
 
     it "should not run at 2010-12-20 00:00:01" do
+      @ce_short.at?(Time.parse("2010-12-20 00:00:01")).must_equal false
       @ce.at?(Time.parse("2010-12-20 00:00:01")).must_equal false
     end
 
@@ -22,9 +25,10 @@ describe CronEntry do
       count = 0
       start = Time.parse("2010-12-20 00:00:00").to_i
       start.upto(start + 3599) do |t|
+        count += 1 if @ce_short.at?(Time.at(t))
         count += 1 if @ce.at?(Time.at(t))
       end
-      count.must_equal 60
+      count.must_equal 120
     end
   end
 

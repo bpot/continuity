@@ -1,7 +1,14 @@
 module Continuity
   class CronEntry
     def initialize(s)
-      seconds, minutes, hours, dates, months, dayofweek = s.split(" ")
+      cron_parts = s.split(" ")
+      if cron_parts.size == 5
+        cron_parts.unshift("0")
+      elsif cron_parts.size != 6
+        raise "Cron format invalid"
+      end
+
+      seconds, minutes, hours, dates, months, dayofweek = *cron_parts
 
       @seconds_bits  = get_bits(seconds,  60)
       @minutes_bits  = get_bits(minutes,  60)
