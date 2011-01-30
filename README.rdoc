@@ -36,6 +36,15 @@ Redis could conceivably be replaced by any consistent datastore.
 * It doesn't support month/day names, use the numeral.  
 * In many cron implementations entries specifying the day of the month and day of the week (i.e. "0 0 11 1,5 * mon") have a special meaning, this is not supported.
 
+= On Schedule Hook
+
+    scheduler.on_schedule do |range|
+      delayed_jobs = $redis.zrangebyscore(:delayed_jobs, range.first, range.last)
+      delayed_jobs.each do |job|
+        do_it(job)
+      end
+    end
+
 == Contributing to continuity
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet

@@ -8,6 +8,7 @@ module Continuity
       @frequency      = frequency
       @backend        = backend
       @next_schedule  = 0
+      @on_schedule_cbs = []
 
       @jobs = {}
     end
@@ -19,6 +20,14 @@ module Continuity
     def cron(cron_line, &blk)
       @jobs[CronEntry.new(cron_line)] = blk
     end
+
+    def on_schedule(&block)
+      @on_schedule_cbs << block
+    end
+
+    def trigger_cbs(range)
+      @on_schedule_cbs.each { |cb| cb.call(range) }
+    end
     
     def run
       now = Time.now.to_i
@@ -28,6 +37,8 @@ module Continuity
       scheduled_up_to = @backend.lock_for_scheduling(now) do |previous_time|
         range_scheduled = (previous_time+1)..now
         do_jobs(range_scheduled)
+        trigger_cbs(range)
+        yield range_scheduled
       end
 
       @next_schedule = scheduled_up_to + @frequency
