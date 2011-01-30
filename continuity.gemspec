@@ -10,12 +10,11 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Bob Potter"]
   s.date = %q{2011-01-29}
-  s.description = %q{Allows you to share scheduling duties across any number of workers.}
+  s.description = %q{TODO: longer description of your gem}
   s.email = %q{bobby.potter@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
-    "README.rdoc",
-    "TODO"
+    "README.rdoc"
   ]
   s.files = [
     ".document",
@@ -25,6 +24,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "continuity.gemspec",
     "examples/worker.rb",
     "lib/continuity.rb",
     "lib/continuity/cron_entry.rb",
@@ -43,7 +43,7 @@ Gem::Specification.new do |s|
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Allows you to share scheduling duties across any number of workers.}
+  s.summary = %q{TODO: one-line summary of your gem}
   s.test_files = [
     "examples/worker.rb",
     "test/helper.rb",
