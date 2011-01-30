@@ -25,10 +25,6 @@ module Continuity
       @on_schedule_cbs << block
     end
 
-    def trigger_cbs(range)
-      @on_schedule_cbs.each { |cb| cb.call(range) }
-    end
-
     def run
       @scheduling_thread = Thread.new {
         loop do
@@ -63,6 +59,7 @@ module Continuity
       return range_scheduled
     end
 
+    private
     def do_jobs(time_range)
       time_range.each do |t|
         time = Time.at(t)
@@ -72,6 +69,10 @@ module Continuity
           end
         end
       end
+    end
+
+    def trigger_cbs(range)
+      @on_schedule_cbs.each { |cb| cb.call(range) }
     end
   end
 end
