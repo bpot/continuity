@@ -28,8 +28,25 @@ module Continuity
     def trigger_cbs(range)
       @on_schedule_cbs.each { |cb| cb.call(range) }
     end
-    
+
     def run
+      @scheduling_thread = Thread.new {
+        loop do
+          begin
+            maybe_schedule
+            sleep 1
+          rescue Object
+            # log this error
+          end
+        end
+      }
+    end
+
+    def join
+      @scheduling_thread.join
+    end
+
+    def maybe_schedule
       now = Time.now.to_i
       return false unless @next_schedule <= now
 

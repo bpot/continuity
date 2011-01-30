@@ -27,7 +27,7 @@ Redis could conceivably be replaced by any consistent datastore.
     # main worker loop
     loop do
       do_job
-      scheduler.run  # this call introduces only a trivial amount of overhead
+      scheduler.maybe_schedule
     end
 
 = Cron
