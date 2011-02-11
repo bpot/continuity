@@ -166,4 +166,26 @@ describe CronEntry do
       count.must_equal 600
     end
   end
+
+  describe "invalid intervals" do
+    it "should raise CronFormatError on '1 2 3'" do
+      lambda { CronEntry.new("1 2 3") }.must_raise CronFormatError
+    end
+
+    it "should raise CronFormatError on '1 2 3 4 5 6 7'" do
+      lambda { CronEntry.new("1 2 3 4 5 6 7") }.must_raise CronFormatError
+    end
+
+    it "should raise CronFormatError on 'im not a cron task'" do
+      lambda { CronEntry.new("im not a cron task") }.must_raise CronFormatError
+    end
+
+    it "should raise CronFormatError on 'SrslyFake'" do
+      lambda { CronEntry.new("SrslyFake") }.must_raise CronFormatError
+    end
+
+    it "should raise CronFormatError on '0 0 0 0 0 0'" do
+      lambda { CronEntry.new("0 0 0 0 0 0") }.must_raise CronFormatError
+    end
+  end
 end
