@@ -28,4 +28,28 @@ describe Scheduler do
       end
     end
   end
+
+  describe "maybe schedule" do
+    before do
+      @scheduler = Scheduler.new_using_redis(redis_clean)
+    end
+
+    it "should call a passed in block with the range scheduled" do
+      range = nil
+      @scheduler.maybe_schedule do |r|
+        range = r
+      end
+      assert range
+    end
+
+    it "should call #on_schedule blocks" do
+      range = nil
+      @scheduler.on_schedule do |r|
+        range = r
+      end
+
+      @scheduler.maybe_schedule
+      assert range
+    end
+  end
 end

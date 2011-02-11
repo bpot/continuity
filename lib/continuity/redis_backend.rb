@@ -14,7 +14,8 @@ module Continuity
 
       # bootstrap
       if scheduled_up_to == 0
-        lock do
+        lock(now) do
+          yield now
           @redis.set(LAST_SCHED_KEY, now)
         end
 
@@ -26,7 +27,7 @@ module Continuity
       # BUT, once we attain a lock we need to make sure 
       # someone else hasn't already scheduled that period
       if (now - scheduled_up_to) >= @frequency
-        lock do
+        lock(now) do
           scheduled_up_to = @redis.get(LAST_SCHED_KEY).to_i
           if (now - scheduled_up_to) >= @frequency
             # good we should still schedule
@@ -42,27 +43,26 @@ module Continuity
 
     private
     # http://code.google.com/p/redis/wiki/SetnxCommand
-    def lock
-      lock_expiration = Time.now.to_i + @lock_timeout + 1 
+    def lock(now)
+      lock_expiration = now + @lock_timeout + 1 
       res = @redis.setnx(LOCK_KEY, lock_expiration)
 
-      yielded = false
+      acquired_lock = false
       if res
+        acquired_lock = true
         yield
-        yielded = true
       else
         current_expiration  = @redis.get(LOCK_KEY).to_i
-        now = Time.now.to_i
         if current_expiration < now
           new_expiration = now + @lock_timeout + 1 
           if current_expiration == @redis.getset(LOCK_KEY, new_expiration).to_i
+            acquired_lock = true
             yield
-            yielded = true
           end
         end
       end
-
-      if yielded
+    ensure
+      if acquired_lock
         @redis.del(LOCK_KEY)
       end
     end

@@ -4,15 +4,7 @@ require 'continuity'
 
 describe Continuity::RedisBackend do
   before do
-    @redis = Redis.new(:thread_safe => true, :port => 16379)
-    begin
-      @redis.flushall
-    rescue Errno::ECONNREFUSED
-      puts '***** Tests need an instance of redis running at 16379. `redis-server test/redis.conf` *****'
-      exit
-    end
-
-    @rb = Continuity::RedisBackend.new(@redis, 10, 30)
+    @rb = Continuity::RedisBackend.new(redis_clean, 10, 30)
   end
 
   describe "bootstrapping" do
@@ -23,13 +15,13 @@ describe Continuity::RedisBackend do
       last_scheduled_at.must_equal now
     end
 
-    it "should not yield" do
+    it "should yield" do
       yielded = false
 
       now = Time.now.to_i
       @rb.lock_for_scheduling(now) { yielded = true }
 
-      yielded.must_equal false
+      yielded.must_equal true
     end
   end
 
@@ -69,6 +61,49 @@ describe Continuity::RedisBackend do
 
       first_yields.must_equal true
       second_yields.must_equal false
+    end
+  end
+
+  describe "throwing exception in the block given to lock" do
+    it "should release lock" do
+      now = Time.now.to_i
+      @rb.lock_for_scheduling(now) {}
+
+      begin
+        @rb.lock_for_scheduling(now+30) do
+          raise StandardError
+        end
+      rescue
+      end
+      
+      acquired_lock = false
+      @rb.lock_for_scheduling(now+30) do
+        acquired_lock = true
+      end
+
+      acquired_lock.must_equal true
+    end
+  end
+
+  describe "expired lock" do
+    it "should be acquireable" do
+      now = Time.now.to_i
+      @rb.lock_for_scheduling(now) {}
+      
+      acquired_lock_early = false
+      acquired_lock = false
+
+      @rb.lock_for_scheduling(now+30) do
+        @rb.lock_for_scheduling(now+22) do
+          acquired_lock_early = true
+        end
+        @rb.lock_for_scheduling(now+62) do
+          acquired_lock = true
+        end
+      end
+
+      acquired_lock.must_equal true
+      acquired_lock_early.must_equal false
     end
   end
 

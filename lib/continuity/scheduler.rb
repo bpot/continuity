@@ -25,15 +25,15 @@ module Continuity
       @on_schedule_cbs << block
     end
 
-    def run
+    def run(check_frequency = 5)
       @scheduling_thread = Thread.new {
         loop do
           begin
             maybe_schedule
-            sleep 1
+            sleep check_frequency
           rescue Object
-            print $!.backtrace.join("\n")
-            # log this error
+            $stderr.print "--Error in Continuity Scheduler--\n"
+            $stderr.print $!.backtrace.join("\n")
           end
         end
       }
@@ -43,8 +43,7 @@ module Continuity
       @scheduling_thread.join
     end
 
-    def maybe_schedule
-      now = Time.now.to_i
+    def maybe_schedule(now = Time.now.to_i)
       return false unless @next_schedule <= now
 
       range_scheduled = false
