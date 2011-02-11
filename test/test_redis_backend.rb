@@ -8,7 +8,7 @@ describe Continuity::RedisBackend do
     begin
       @redis.flushall
     rescue Errno::ECONNREFUSED
-      puts '***** Tests need an instance of redis running at 16379. `redis-service test/redis.conf` *****'
+      puts '***** Tests need an instance of redis running at 16379. `redis-server test/redis.conf` *****'
       exit
     end
 

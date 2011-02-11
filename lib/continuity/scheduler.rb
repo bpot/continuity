@@ -32,6 +32,7 @@ module Continuity
             maybe_schedule
             sleep 1
           rescue Object
+            print $!.backtrace.join("\n")
             # log this error
           end
         end
@@ -50,8 +51,8 @@ module Continuity
       scheduled_up_to = @backend.lock_for_scheduling(now) do |previous_time|
         range_scheduled = (previous_time+1)..now
         do_jobs(range_scheduled)
-        trigger_cbs(range)
-        yield range_scheduled
+        trigger_cbs(range_scheduled)
+        yield range_scheduled if block_given?
       end
 
       @next_schedule = scheduled_up_to + @frequency
@@ -59,7 +60,6 @@ module Continuity
       return range_scheduled
     end
 
-    private
     def do_jobs(time_range)
       time_range.each do |t|
         time = Time.at(t)
@@ -70,6 +70,7 @@ module Continuity
         end
       end
     end
+    private
 
     def trigger_cbs(range)
       @on_schedule_cbs.each { |cb| cb.call(range) }
