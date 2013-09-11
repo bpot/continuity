@@ -5,8 +5,7 @@ require 'continuity'
 include Continuity
 
 def build_scheduler
-  redis = Redis.new(:port => 16379)
-  scheduler = Continuity::Scheduler.new_using_redis(redis)
+  scheduler = Continuity::Scheduler.new_using_redis(redis_test_client)
   scheduler.cron("*/10 * * * * *") do
   end
 
@@ -22,8 +21,7 @@ TEST_LENGTH  = 60
 
 describe "simulation" do
   before do
-    redis = Redis.new(:port => 16379)
-    redis.flushall
+    redis_test_client.flushall
   end
 
   it "should schedule a continuous range" do

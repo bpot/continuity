@@ -20,8 +20,17 @@ require 'continuity'
 class MiniTest::Unit::TestCase
 end
 
+def redis_test_client
+  if ENV['TRAVIS'] && ENV['CI']
+    # Use default port for travis ci (we have not control)
+    redis = Redis.new(:thread_safe => true)
+  else
+    redis = Redis.new(:thread_safe => true, :port => 16379)
+  end
+end
+
 def redis_clean
-  redis = Redis.new(:thread_safe => true, :port => 16379)
+  redis = redis_test_client
   begin
     redis.flushall
   rescue Errno::ECONNREFUSED
