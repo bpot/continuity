@@ -15,11 +15,20 @@ module Continuity
       # bootstrap
       if scheduled_up_to == 0
         lock(now) do
-          yield now
-          @redis.set(LAST_SCHED_KEY, now)
+
+          # double check that someone else has bootstrapped
+          # since we fetched the key
+          scheduled_up_to = @redis.get(LAST_SCHED_KEY).to_i
+          if scheduled_up_to == 0
+            yield now - 1
+            @redis.set(LAST_SCHED_KEY, now)
+
+            return now
+          else
+            return scheduled_up_to
+          end
         end
 
-        return now
       end
 
       # this is tricky, we only want to attempt a lock

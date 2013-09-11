@@ -19,6 +19,7 @@ end
 WORKER_COUNT = 100
 MUTEX        = Mutex.new
 TEST_LENGTH  = 60
+
 describe "simulation" do
   before do
     redis = Redis.new(:port => 16379)
@@ -43,7 +44,7 @@ describe "simulation" do
               if last_scheduled.nil?
                 last_scheduled = range.last
               else
-                (last_scheduled + 1).must_equal range.first
+                assert_equal (last_scheduled + 1), range.first
                 last_scheduled = range.last
               end
             end

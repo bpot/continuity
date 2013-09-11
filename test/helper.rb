@@ -9,6 +9,7 @@ rescue Bundler::BundlerError => e
   $stderr.puts "Run `bundle install` to install missing gems"
   exit e.status_code
 end
+require 'minitest'
 require 'minitest/unit'
 require 'minitest/pride'
 
@@ -30,4 +31,4 @@ def redis_clean
   redis
 end
 
-MiniTest::Unit.autorun
+MiniTest.autorun
