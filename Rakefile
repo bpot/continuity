@@ -15,8 +15,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "continuity"
   gem.homepage = "http://github.com/bpot/continuity"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %q{Allows you to distribute job scheduling across a number of processes}
+  gem.description = %q{Distributed scheduling of jobs}
   gem.email = "bobby.potter@gmail.com"
   gem.authors = ["Bob Potter"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
@@ -33,16 +33,9 @@ Rake::TestTask.new(:test) do |test|
   test.verbose = true
 end
 
-require 'rcov/rcovtask'
-Rcov::RcovTask.new do |test|
-  test.libs << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
-end
-
 task :default => :test
 
-require 'rake/rdoctask'
+require 'rdoc/task'
 Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
