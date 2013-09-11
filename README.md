@@ -1,4 +1,4 @@
-= Continuity
+# Continuity [![Build Status](https://travis-ci.org/bpot/continuity.png?branch=master)](https://travis-ci.org/bpot/continuity) [![Code Climate](https://codeclimate.com/github/bpot/continuity.png)](https://codeclimate.com/github/bpot/continuity)
 
 NOTE: this has a decent amount of test coverage, but has yet to be tested in any kind of production environment. I hope to do some more real-worldish testing soon.
 
@@ -8,44 +8,48 @@ Continuity only runs one job at a time, so your tasks should create jobs in Resq
 
 Redis could conceivably be replaced by any consistent datastore.
 
-= Example
+## Example
   
-    scheduler = Continuity::Scheduler.new_using_redis(redis_handle)
+``` ruby
+scheduler = Continuity::Scheduler.new_using_redis(redis_handle)
 
-    scheduler.every('10s') do
-      Resque.enqueue(PeriodicJob)
-    end
+scheduler.every('10s') do
+  Resque.enqueue(PeriodicJob)
+end
 
-    scheduler.cron('0 0 * * * *') do
-      Resque.enqueue(DailyJob)
-    end
+scheduler.cron('0 0 * * * *') do
+  Resque.enqueue(DailyJob)
+end
 
-    scheduler.cron('0 * * * *') do
-      Resque.enqueue(DailyJob)
-    end
+scheduler.cron('0 * * * *') do
+  Resque.enqueue(DailyJob)
+end
 
-    # main worker loop
-    loop do
-      do_job
-      scheduler.maybe_schedule
-    end
+# main worker loop
+loop do
+  do_job
+  scheduler.maybe_schedule
+end
+```
 
-= Cron
+## Cron
 
 * Supports a sixth field at the front for seconds. 
 * It doesn't support month/day names, use the numeral.  
 * In many cron implementations entries specifying the day of the month and day of the week (i.e. "0 0 11 1,5 * mon") have a special meaning, this is not supported.
 
-= On Schedule Hook
+## On Schedule Hook
 
-    scheduler.on_schedule do |range|
-      delayed_jobs = $redis.zrangebyscore(:delayed_jobs, range.first, range.last)
-      delayed_jobs.each do |job|
-        do_it(job)
-      end
-    end
+``` ruby
+scheduler.on_schedule do |range|
+  delayed_jobs = $redis.zrangebyscore(:delayed_jobs, range.first, range.last)
+  delayed_jobs.each do |job|
+    do_it(job)
+  end
+end
+```
 
-== Contributing to continuity
+## Contributing to continuity
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
@@ -55,8 +59,7 @@ Redis could conceivably be replaced by any consistent datastore.
 * Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 
-== Copyright
+# Copyright
 
-Copyright (c) 2010 Bob Potter. See LICENSE.txt for
-further details.
+Copyright (c) 2013 Bob Potter. See LICENSE.txt for further details.
 
