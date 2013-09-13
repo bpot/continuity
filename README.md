@@ -49,6 +49,25 @@ scheduler.on_schedule do |range|
 end
 ```
 
+
+## Re-Entrant Scheduling
+
+Continuity is re-entrant by default.  IE, if a job is scheduled to happen at noon and the process is terminated
+at 11:55 and restarted at 12:05, the job will still be scheduled.  
+
+If this is not what you want, you can turn off re-entry by setting `:reentrant => false` when you create the 
+scheduler.  If you do this, continuity will not attempt to schedule any jobs prior to the scheduler's `entry_time`,
+which defaults to `Time.now` when the object is created.  
+
+``` ruby
+scheduler = Continuity::Scheduler.new_using_redis(redis_handle, :reentrant => false, :entry_time => Time.now + 60)
+```
+
+Keep in mind that `entry_time` is process-specific, so you could end up with different processes scheduling for
+different time ranges the first time they execute.  Re-entry is prevented by not scheduling jobs that would happen
+prior to `entry_time`, so if you use values in the future continuity won't schedule anything until after that time.
+
+
 ## Contributing to continuity
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
