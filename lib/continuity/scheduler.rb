@@ -9,7 +9,8 @@ module Continuity
     def initialize(backend, args = {})
       @frequency      = args[:frequency] || 10
       @reentrant      = args[:reentrant] || true
-      @entry_time     = args[:entry_time] || Time.now
+      @lookback       = args[:lookback] || 60
+      @entry_time     = args[:entry_time] || Time.now - @lookback
       @backend        = backend
       @next_schedule  = 0
       @on_schedule_cbs = []

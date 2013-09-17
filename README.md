@@ -56,16 +56,15 @@ Continuity is re-entrant by default.  IE, if a job is scheduled to happen at noo
 at 11:55 and restarted at 12:05, the job will still be scheduled.  
 
 If this is not what you want, you can turn off re-entry by setting `:reentrant => false` when you create the 
-scheduler.  If you do this, continuity will not attempt to schedule any jobs prior to the scheduler's `entry_time`,
-which defaults to `Time.now` when the object is created.  
+scheduler.  If you do this, continuity will not attempt to schedule any jobs that would have been scheduled
+ more than `lookback` seconds ago, which defaults to 60.
 
 ``` ruby
-scheduler = Continuity::Scheduler.new_using_redis(redis_handle, :reentrant => false, :entry_time => Time.now + 60)
+scheduler = Continuity::Scheduler.new_using_redis(redis_handle, :reentrant => false, :lookback => 5.minutes)
 ```
 
-Keep in mind that `entry_time` is process-specific, so you could end up with different processes scheduling for
-different time ranges the first time they execute.  Re-entry is prevented by not scheduling jobs that would happen
-prior to `entry_time`, so if you use values in the future continuity won't schedule anything until after that time.
+Keep in mind that `lookback` is process-specific, so you could end up with different processes scheduling for
+different time ranges the first time they execute. 
 
 
 ## Contributing to continuity
