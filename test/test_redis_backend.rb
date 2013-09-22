@@ -4,7 +4,7 @@ require 'continuity'
 
 describe Continuity::RedisBackend do
   before do
-    @rb = Continuity::RedisBackend.new(redis_clean, 10, 30)
+    @rb = Continuity::RedisBackend.new(redis_clean, :frequency => 10, :lock_timeout => 30)
   end
 
   describe "bootstrapping" do
@@ -141,6 +141,16 @@ describe Continuity::RedisBackend do
       end
 
       yielded_count.must_equal 10
+    end
+  end
+
+  describe "maybe schedule" do
+    it "should call a passed in block with the range scheduled" do
+      range = nil
+      @rb.maybe_schedule do |r|
+        range = r
+      end
+      assert range
     end
   end
 end

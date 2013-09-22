@@ -35,7 +35,7 @@ describe "simulation" do
         
         loop do
           sleep rand(5)
-          range = s.maybe_schedule
+          range = s.backend.maybe_schedule
 
           if range
             MUTEX.synchronize do

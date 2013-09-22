@@ -12,6 +12,8 @@ Redis could conceivably be replaced by any consistent datastore.
   
 ``` ruby
 scheduler = Continuity::Scheduler.new_using_redis(redis_handle)
+# or
+scheduler = Continuity::Scheduler.new_using_zookeeper("zk1.domain.com:2181,zk2.domain.com:2181,zk3.domain.com:2181")
 
 scheduler.every('10s') do
   Resque.enqueue(PeriodicJob)
@@ -25,11 +27,8 @@ scheduler.cron('0 * * * *') do
   Resque.enqueue(DailyJob)
 end
 
-# main worker loop
-loop do
-  do_job
-  scheduler.maybe_schedule
-end
+scheduler_thread = scheduler.run
+scheduler.join # if you want to execute the scheduler in the current thread
 ```
 
 ## Cron
@@ -48,6 +47,13 @@ scheduler.on_schedule do |range|
   end
 end
 ```
+
+## Running tests
+
+To run the tests, you'll need to have Redis and Zookeeper running locally.  Zookeeper doesn't require
+any special setup - just make sure it's running on `localhost:2181`.  There is a config file located in
+`test/redis.conf` - start redis with `redis-server test/redis.conf` before running tests.
+
 
 ## Contributing to continuity
  
