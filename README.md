@@ -8,6 +8,18 @@ Continuity only runs one job at a time, so your tasks should create jobs in Resq
 
 Redis could conceivably be replaced by any consistent datastore.
 
+## Install
+
+You need to install both the `continuity` gem and the datastore interface gem (currently either
+`redis` or `zk`).
+
+``` ruby
+gem 'redis'   # For Continuity::Scheduler::new_using_redis
+gem 'zk'      # For Continuity::Scheduler::new_using_zookeeper
+
+gem 'continuity'
+```
+
 ## Example
   
 ``` ruby

@@ -1,6 +1,7 @@
 require 'helper'
 require 'minitest/autorun'
 require 'continuity'
+require 'continuity/redis_backend'
 
 describe Continuity::RedisBackend do
   before do

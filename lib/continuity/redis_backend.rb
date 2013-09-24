@@ -1,3 +1,5 @@
+require 'redis'
+
 module Continuity
   class RedisBackend
     LOCK_KEY = "continuity_lock"

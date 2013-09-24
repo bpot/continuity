@@ -1,6 +1,7 @@
 require 'helper'
 require 'minitest/autorun'
 require 'continuity'
+require 'continuity/zk_backend'
 
 include Continuity
 
@@ -46,12 +47,10 @@ describe "simulation" do
           scheduler.cron("*/10 * * * * *") do
             if failover
               failover = false
-              puts "failing over"
               raise "Failing over to another thread"
             end
 
             mutex.synchronize do
-              puts "accumulating from #{accumulator}"
               accumulator += 1
             end
           end

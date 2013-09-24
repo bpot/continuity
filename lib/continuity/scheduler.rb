@@ -1,10 +1,14 @@
 module Continuity
   class Scheduler
     def self.new_using_redis(redis, args={})
+      require 'continuity/redis_backend'
+
       new(RedisBackend.new(redis, args))
     end
 
     def self.new_using_zookeeper(zookeepers, args={})
+      require 'continuity/zk_backend'
+
       new(ZkBackend.new(zookeepers, args))
     end
 

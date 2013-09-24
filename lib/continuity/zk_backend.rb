@@ -1,3 +1,4 @@
+require 'zk'
 require 'socket'
 
 module Continuity
@@ -56,16 +57,15 @@ module Continuity
         sleep frequency
         break unless loop?
       end
-    rescue
+    ensure
       zk.close
-      raise
     end
     
-    private
-
     def candidate
       @candidate ||= ZK::Election::Candidate.new(@zk, election_name, :data => id)
     end
+
+    private
 
     # If scheduled tasks are ready to be executed, do them
     #

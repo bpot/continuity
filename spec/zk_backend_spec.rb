@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'continuity/zk_backend'
 
 describe Continuity::ZkBackend do
   before do
@@ -8,6 +9,9 @@ describe Continuity::ZkBackend do
   describe "#each_epoch" do
     before(:each) do
       @zk.candidate.stub(:vote!)
+      @zk.zk.stub(:get).and_return(["0",nil])
+      @zk.zk.stub(:create)
+      @zk.zk.stub(:set)
     end
 
     context "with successful election" do
