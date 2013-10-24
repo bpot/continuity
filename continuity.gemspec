@@ -42,7 +42,6 @@ Gem::Specification.new do |s|
     "test/test_race_issues.rb",
     "test/test_redis_backend.rb",
     "test/test_scheduler.rb",
-    "test/test_zk_integration.rb"
   ]
   s.homepage = "http://github.com/bpot/continuity"
   s.licenses = ["MIT"]

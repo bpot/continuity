@@ -19,7 +19,7 @@ describe Scheduler do
 
   describe "#run" do
     before do
-      @scheduler = Scheduler.new(SimpleBackend.new)
+      @scheduler = Scheduler.new(SimpleBackend.new, :discard_past => false)
     end
     
     it "should do scheduled jobs" do
@@ -57,8 +57,8 @@ describe Scheduler do
           job_run = true
         end
         
-        time = Time.parse("2010-12-20 08:00:00").to_i
-        @scheduler.do_jobs(time..time)
+        time = Time.parse("2010-12-20 08:00:00")
+        @scheduler.do_jobs(time)
 
         job_run.must_equal true
       end

@@ -60,6 +60,16 @@ scheduler.on_schedule do |range|
 end
 ```
 
+## Dealing with the past
+
+If all the schedulers go down, jobs which would have been scheduled during the down-time will not be re-scheduled.
+You can enable scheduling jobs in the past by setting `discard_past` when you create the scheduler;
+
+``` ruby
+scheduler = Continuity::Scheduler.new_using_redis(redis_handle, :discard_past => false)
+```
+
+
 ## Running tests
 
 To run the tests, you'll need to have Redis and Zookeeper running locally.  Zookeeper doesn't require

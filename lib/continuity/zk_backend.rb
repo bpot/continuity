@@ -22,9 +22,10 @@ module Continuity
     #
     def initialize(zookeepers, args={})
       @zk             = ZK.new(zookeepers)
+      @namespace      = args[:namespace].gsub('/', '__')
       @frequency      = args[:frequency] || 10
-      @zk_key         = args[:zk_key] || "/_continuity_scheduled_up_to"
-      @election_name  = args[:election_name] || "continuity_scheduler"
+      @zk_key         = args[:zk_key] || ["/_continuity_scheduled_up_to", @namespace].compact.join('__')
+      @election_name  = args[:election_name] || ["continuity_scheduler", @namespace].compact.join('__')
       @loop           = args.has_key?(:loop) ? args[:loop] : true
       @mutex          = Mutex.new
 
