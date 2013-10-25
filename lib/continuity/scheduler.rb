@@ -1,16 +1,29 @@
 module Continuity
   class Scheduler
-    def self.new_using_redis(redis, frequency = 10)
-      new(RedisBackend.new(redis, frequency))
+    def self.new_using_redis(redis, args={})
+      require 'continuity/redis_backend'
+
+      discard_past = args.delete(:discard_past)
+
+      new(RedisBackend.new(redis, args), :discard_past => discard_past)
     end
 
-    def initialize(backend, frequency = 10)
-      @frequency      = frequency
-      @backend        = backend
-      @next_schedule  = 0
-      @on_schedule_cbs = []
+    def self.new_using_zookeeper(zookeepers, args={})
+      require 'continuity/zk_backend'
 
-      @jobs = {}
+      discard_past = args.delete(:discard_past)
+
+      new(ZkBackend.new(zookeepers, args), :discard_past => discard_past)
+    end
+
+    attr_reader :backend, :discard_past
+
+    def initialize(backend, args={})
+      @backend          = backend
+      @on_schedule_cbs  = []
+      @discard_past     = args[:discard_past].nil? ? true : args[:discard_past]
+
+      @jobs             = {}
     end
 
     def every(period, &blk)
@@ -25,16 +38,15 @@ module Continuity
       @on_schedule_cbs << block
     end
 
-    def run(check_frequency = 5)
+    def run
       @scheduling_thread = Thread.new {
-        loop do
-          begin
-            maybe_schedule
-            sleep check_frequency
-          rescue Object
-            $stderr.print "--Error in Continuity Scheduler--\n"
-            $stderr.print $!.backtrace.join("\n")
+        @backend.each_epoch do |epoch|
+
+          with_optionally_discarded_past(epoch) do |time|
+            do_jobs(time)
           end
+
+          trigger_cbs(epoch)
         end
       }
     end
@@ -43,33 +55,27 @@ module Continuity
       @scheduling_thread.join
     end
 
-    def maybe_schedule(now = Time.now.to_i)
-      return false unless @next_schedule <= now
-
-      range_scheduled = false
-      scheduled_up_to = @backend.lock_for_scheduling(now) do |previous_time|
-        range_scheduled = (previous_time+1)..now
-        do_jobs(range_scheduled)
-        trigger_cbs(range_scheduled)
-        yield range_scheduled if block_given?
-      end
-
-      @next_schedule = scheduled_up_to + @frequency
-
-      return range_scheduled
-    end
-
-    def do_jobs(time_range)
-      time_range.each do |t|
-        time = Time.at(t)
-        @jobs.each do |cron_entry, blk|
-          if cron_entry.at?(time)
-            blk[time]
-          end
+    def do_jobs(time)
+      @jobs.each do |cron_entry, blk|
+        if cron_entry.at?(time)
+          blk[time]
         end
       end
     end
+
     private
+
+    def with_optionally_discarded_past(epoch)
+      now = Time.now
+
+      epoch.map do |t|
+        Time.at(t)
+      end.select do |time|
+        !discard_past || time > now
+      end.each do |time|
+        yield time
+      end
+    end
 
     def trigger_cbs(range)
       @on_schedule_cbs.each { |cb| cb.call(range) }

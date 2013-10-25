@@ -4,9 +4,45 @@ require 'continuity'
 
 include Continuity
 
+NOW = Time.now.to_i
+EPOCH = (NOW..(NOW + 1))
+class SimpleBackend
+  def each_epoch(&block)
+    block.call(EPOCH)
+  end
+end
+
 describe Scheduler do
   before do
     @backend = MiniTest::Mock.new
+  end
+
+  describe "#run" do
+    before do
+      @scheduler = Scheduler.new(SimpleBackend.new, :discard_past => false)
+    end
+    
+    it "should do scheduled jobs" do
+      range = nil
+      @scheduler.cron("* * * * * *") do |r|
+        range = r
+      end
+
+      @scheduler.run
+      @scheduler.join
+      assert range
+    end
+
+    it "should call #on_schedule blocks" do
+      range = nil
+      @scheduler.on_schedule do |r|
+        range = r
+      end
+
+      @scheduler.run
+      @scheduler.join
+      assert range
+    end
   end
 
   describe "do_jobs" do
@@ -21,35 +57,11 @@ describe Scheduler do
           job_run = true
         end
         
-        time = Time.parse("2010-12-20 08:00:00").to_i
-        @scheduler.do_jobs(time..time)
+        time = Time.parse("2010-12-20 08:00:00")
+        @scheduler.do_jobs(time)
 
         job_run.must_equal true
       end
-    end
-  end
-
-  describe "maybe schedule" do
-    before do
-      @scheduler = Scheduler.new_using_redis(redis_clean)
-    end
-
-    it "should call a passed in block with the range scheduled" do
-      range = nil
-      @scheduler.maybe_schedule do |r|
-        range = r
-      end
-      assert range
-    end
-
-    it "should call #on_schedule blocks" do
-      range = nil
-      @scheduler.on_schedule do |r|
-        range = r
-      end
-
-      @scheduler.maybe_schedule
-      assert range
     end
   end
 end

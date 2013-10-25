@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'bundler'
 require 'simplecov'
+require 'pry'
 SimpleCov.start
 begin
   Bundler.setup(:default, :development)

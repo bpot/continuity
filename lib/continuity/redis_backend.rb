@@ -1,12 +1,43 @@
+require 'redis'
+
 module Continuity
   class RedisBackend
     LOCK_KEY = "continuity_lock"
     LAST_SCHED_KEY = "continuity_scheduled_up_to"
 
-    def initialize(redis, frequency = 10, lock_timeout = 30)
-      @redis        = redis
-      @lock_timeout = lock_timeout
-      @frequency    = frequency
+    def initialize(redis, args={})
+      @redis          = redis
+      @lock_timeout   = args[:lock_timeout] || 30
+      @frequency      = args[:frequency] || 10
+      @next_schedule  = 0
+    end
+
+    # Yields the each time block which neds to be scheduled,
+    # if a lock has been established
+    def each_epoch(&block)
+      loop do
+        begin
+          maybe_schedule(&block)
+          sleep @frequency
+        rescue Object
+          $stderr.print "--Error in Continuity Scheduler--\n"
+          $stderr.print $!.backtrace.join("\n")
+        end
+      end
+    end
+
+    def maybe_schedule(now=Time.now.to_i)
+      return false unless @next_schedule <= now
+
+      range_scheduled = false
+      scheduled_up_to = lock_for_scheduling(now) do |previous_time|
+        range_scheduled = (previous_time+1)..now
+        yield range_scheduled if block_given? # replaces `do_jobs(range_scheduled); trigger_cbs(range_scheduled)`
+      end
+
+      @next_schedule = scheduled_up_to + @frequency
+
+      return range_scheduled
     end
 
     def lock_for_scheduling(now)

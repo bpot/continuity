@@ -8,10 +8,24 @@ Continuity only runs one job at a time, so your tasks should create jobs in Resq
 
 Redis could conceivably be replaced by any consistent datastore.
 
+## Install
+
+You need to install both the `continuity` gem and the datastore interface gem (currently either
+`redis` or `zk`).
+
+``` ruby
+gem 'redis'   # For Continuity::Scheduler::new_using_redis
+gem 'zk'      # For Continuity::Scheduler::new_using_zookeeper
+
+gem 'continuity'
+```
+
 ## Example
   
 ``` ruby
 scheduler = Continuity::Scheduler.new_using_redis(redis_handle)
+# or
+scheduler = Continuity::Scheduler.new_using_zookeeper("zk1.domain.com:2181,zk2.domain.com:2181,zk3.domain.com:2181")
 
 scheduler.every('10s') do
   Resque.enqueue(PeriodicJob)
@@ -25,11 +39,8 @@ scheduler.cron('0 * * * *') do
   Resque.enqueue(DailyJob)
 end
 
-# main worker loop
-loop do
-  do_job
-  scheduler.maybe_schedule
-end
+scheduler_thread = scheduler.run
+scheduler.join # if you want to execute the scheduler in the current thread
 ```
 
 ## Cron
@@ -48,6 +59,23 @@ scheduler.on_schedule do |range|
   end
 end
 ```
+
+## Dealing with the past
+
+If all the schedulers go down, jobs which would have been scheduled during the down-time will not be re-scheduled.
+You can enable scheduling jobs in the past by setting `discard_past` when you create the scheduler;
+
+``` ruby
+scheduler = Continuity::Scheduler.new_using_redis(redis_handle, :discard_past => false)
+```
+
+
+## Running tests
+
+To run the tests, you'll need to have Redis and Zookeeper running locally.  Zookeeper doesn't require
+any special setup - just make sure it's running on `localhost:2181`.  There is a config file located in
+`test/redis.conf` - start redis with `redis-server test/redis.conf` before running tests.
+
 
 ## Contributing to continuity
  
