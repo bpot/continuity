@@ -1,11 +1,16 @@
 module Continuity
   class Scheduler
-    def self.new_using_redis(redis, frequency = 10)
-      new(RedisBackend.new(redis, frequency))
+    def self.new_using_redis(redis, args = {})
+      frequency = args.delete(:frequency) || 10
+
+      new(RedisBackend.new(redis, frequency), args)
     end
 
-    def initialize(backend, frequency = 10)
-      @frequency      = frequency
+    def initialize(backend, args = {})
+      @frequency      = args[:frequency] || 10
+      @reentrant      = args[:reentrant] || true
+      @lookback       = args[:lookback] || 60
+      @entry_time     = args[:entry_time] || Time.now - @lookback
       @backend        = backend
       @next_schedule  = 0
       @on_schedule_cbs = []
@@ -48,7 +53,9 @@ module Continuity
 
       range_scheduled = false
       scheduled_up_to = @backend.lock_for_scheduling(now) do |previous_time|
-        range_scheduled = (previous_time+1)..now
+        range_start       = @reentrant ? previous_time : [previous_time, @entry_time.to_i].max
+        range_end         = @reentrant ? now : [now, @entry_time.to_i].max
+        range_scheduled   = (range_start+1)..range_end
         do_jobs(range_scheduled)
         trigger_cbs(range_scheduled)
         yield range_scheduled if block_given?
